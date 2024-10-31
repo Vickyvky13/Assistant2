@@ -1,16 +1,10 @@
-# Ultroid - UserBot
-# Copyright (C) 2021-2023 TeamUltroid
-#
-# This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
-# PLease read the GNU Affero General Public License in
-# <https://www.github.com/TeamUltroid/Ultroid/blob/main/LICENSE/>.
 from . import get_help
 
 __doc__ = get_help("help_channelhacks")
 
-
 import asyncio
 import io
+import re
 
 from telethon.errors.rpcerrorlist import FloodWaitError
 from telethon.utils import get_display_name, get_peer_id
@@ -24,6 +18,54 @@ SourceM = KeyManager("CH_SOURCE", cast=list)
 DestiM = KeyManager("CH_DESTINATIONS", cast=list)
 
 
+import os
+from telethon import events
+
+message_map = {}
+
+# Function to handle message deletions in the source channel
+@ultroid_bot.on(events.MessageDeleted)
+async def on_source_message_delete(event):
+    for deleted_id in event.deleted_ids:
+        # Check if the deleted message ID is in the message map
+        if deleted_id in message_map:
+            destination_chat_id, destination_message_id = message_map[deleted_id]
+            try:
+                # Attempt to delete the corresponding message in the destination channel
+                await event.client.delete_messages(destination_chat_id, destination_message_id)
+            except Exception as ex:
+                # Log the exception if unable to delete
+                try:
+                    ERROR[str(ex)]
+                except KeyError:
+                    ERROR.update({str(ex): ex})
+                    error_message = f"**Error on AUTOPOST DELETE**\n\n`{ex}`"
+                    await asst.send_message(udB.get_key("LOG_CHANNEL"), error_message)
+            # Clean up the message map
+            del message_map[deleted_id]
+
+# Function to handle message edits in the source channel
+@ultroid_bot.on(events.MessageEdited)
+async def on_source_message_edit(event):
+    # Check if the edited message ID is in the message map
+    if event.message.id in message_map:
+        destination_chat_id, destination_message_id = message_map[event.message.id]
+        try:
+            # Modify "TGT" and "SL" lines to "{PRIMIUM GROUP}"
+            modified_text = re.sub(r'\b(TGT|SL)\b[^\n]*', r'\1 {PRIMIUM GROUP}', event.message.text, flags=re.IGNORECASE)
+            
+            # Attempt to edit the corresponding message in the destination channel
+            await event.client.edit_message(destination_chat_id, destination_message_id, modified_text)
+        except Exception as ex:
+            # Log the exception if unable to edit
+            try:
+                ERROR[str(ex)]
+            except KeyError:
+                ERROR.update({str(ex): ex})
+                error_message = f"**Error on AUTOPOST EDIT**\n\n`{ex}`"
+                await asst.send_message(udB.get_key("LOG_CHANNEL"), error_message)
+
+# Function to automatically post messages from source to destination
 async def autopost_func(e):
     if not udB.get_key("AUTOPOST"):
         return
@@ -31,18 +73,76 @@ async def autopost_func(e):
     th = await e.get_chat()
     if get_peer_id(th) not in x:
         return
+
+    # Modify "TGT" and "SL" lines to "{PRIMIUM GROUP}"
+    modified_text = re.sub(r'\b(TGT|SL)\b[^\n]*', r'\1 {PRIMIUM GROUP}', e.message.text, flags=re.IGNORECASE)
+
+    # Check if the message contains a URL or username mention
+    if re.search(r"http[s]?://|www\.|@[A-Za-z0-9_]+", e.message.text):
+        y = DestiM.get()
+        for ys in y:
+            try:
+                await e.client.send_message(
+                    int(ys), 
+                    "📈⏫ Hey guys send the screenshot profile booking💵 person\n\n📉⏬ You getting any loss 💔 you also send screenshot. I will help you ☺️\n\n@TradingCallOwn 🤙"
+                )
+            except Exception as ex:
+                try:
+                    ERROR[str(ex)]
+                except KeyError:
+                    ERROR.update({str(ex): ex})
+                    Error = f"**Error on AUTOPOST**\n\n`{ex}`"
+                    await asst.send_message(udB.get_key("LOG_CHANNEL"), Error)
+        return  # Skip further processing for this message
+
+    if "💩" in e.message.text:
+        return
+
     y = DestiM.get()
     for ys in y:
         try:
-            await e.client.send_message(int(ys), e.message)
+            reply_to_msg_id = None
+            if e.is_reply:
+                original_msg = await e.get_reply_message()
+                if original_msg.id in message_map:
+                    reply_to_msg_id = message_map[original_msg.id][1]
+
+            # Check if the message contains media
+            if e.message.media:
+                # Download the media file temporarily
+                media_file = await e.client.download_media(e.message.media)
+
+                # Send the media with modified caption to the destination channel
+                sent_message = await e.client.send_file(
+                    int(ys), 
+                    media_file, 
+                    caption=modified_text, 
+                    reply_to=reply_to_msg_id
+                )
+
+                # Clean up the downloaded media file after sending
+                os.remove(media_file)
+            else:
+                # Send a text message if no media is present
+                sent_message = await e.client.send_message(int(ys), modified_text, reply_to=reply_to_msg_id)
+
+            # Store both the destination chat ID and message ID
+            message_map[e.message.id] = (int(ys), sent_message.id)
         except Exception as ex:
             try:
                 ERROR[str(ex)]
             except KeyError:
                 ERROR.update({str(ex): ex})
-                Error = f"**Error on AUTOPOST**\n\n`{ex}`"
-                await asst.send_message(udB.get_key("LOG_CHANNEL"), Error)
+                error_message = f"**Error on AUTOPOST**\n\n`{ex}`"
+                await asst.send_message(udB.get_key("LOG_CHANNEL"), error_message)
 
+# Adding autopost handler if autopost is enabled
+if udB.get_key("AUTOPOST"):
+    ultroid_bot.add_handler(autopost_func, events.NewMessage())
+
+# Add the delete and edit handlers
+ultroid_bot.add_handler(on_source_message_delete, events.MessageDeleted)
+ultroid_bot.add_handler(on_source_message_edit, events.MessageEdited)
 
 @ultroid_cmd(pattern="shift (.*)")
 async def _(e):
