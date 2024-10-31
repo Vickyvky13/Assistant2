@@ -52,7 +52,7 @@ async def on_source_message_edit(event):
         destination_chat_id, destination_message_id = message_map[event.message.id]
         try:
             # Modify "TGT" and "SL" lines to "{PRIMIUM GROUP}"
-            modified_text = re.sub(r'\b(TGT|SL)\b[^\n]*', r'\1 {PRIMIUM GROUP}', event.message.text, flags=re.IGNORECASE)
+            modified_text = re.sub(r'\b(TGT|SL)\b[^\n]*', r'\1 [PRIMIUM GROUP](https://t.me/Trading CallOwn)', event.message.text, flags=re.IGNORECASE)
             
             # Attempt to edit the corresponding message in the destination channel
             await event.client.edit_message(destination_chat_id, destination_message_id, modified_text)
