@@ -75,7 +75,7 @@ async def autopost_func(e):
         return
 
     # Modify "TGT" and "SL" lines to "{PRIMIUM GROUP}"
-    modified_text = re.sub(r'\b(TGT|SL)\b[^\n]*', r'\1 {PRIMIUM GROUP}', e.message.text, flags=re.IGNORECASE)
+    modified_text = re.sub(r'\b(TGT|SL)\b[^\n]*', r'\1 [PRIMIUM GROUP](https://t.me/TradingCallOwn)', e.message.text, flags=re.IGNORECASE)
 
     # Check if the message contains a URL or username mention
     if re.search(r"http[s]?://|www\.|@[A-Za-z0-9_]+", e.message.text):
