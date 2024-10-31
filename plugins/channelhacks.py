@@ -21,43 +21,35 @@ DestiM = KeyManager("CH_DESTINATIONS", cast=list)
 import os
 from telethon import events
 
+
 message_map = {}
 
 # Function to handle message deletions in the source channel
 @ultroid_bot.on(events.MessageDeleted)
 async def on_source_message_delete(event):
     for deleted_id in event.deleted_ids:
-        # Check if the deleted message ID is in the message map
         if deleted_id in message_map:
             destination_chat_id, destination_message_id = message_map[deleted_id]
             try:
-                # Attempt to delete the corresponding message in the destination channel
                 await event.client.delete_messages(destination_chat_id, destination_message_id)
             except Exception as ex:
-                # Log the exception if unable to delete
                 try:
                     ERROR[str(ex)]
                 except KeyError:
                     ERROR.update({str(ex): ex})
                     error_message = f"**Error on AUTOPOST DELETE**\n\n`{ex}`"
                     await asst.send_message(udB.get_key("LOG_CHANNEL"), error_message)
-            # Clean up the message map
             del message_map[deleted_id]
 
 # Function to handle message edits in the source channel
 @ultroid_bot.on(events.MessageEdited)
 async def on_source_message_edit(event):
-    # Check if the edited message ID is in the message map
     if event.message.id in message_map:
         destination_chat_id, destination_message_id = message_map[event.message.id]
         try:
-            # Modify "TGT" and "SL" lines to "{PRIMIUM GROUP}"
             modified_text = re.sub(r'\b(TGT|SL)\b[^\n]*', r'\1 [PRIMIUM GROUP](https://t.me/TradingCallOwn)', event.message.text, flags=re.IGNORECASE)
-            
-            # Attempt to edit the corresponding message in the destination channel
             await event.client.edit_message(destination_chat_id, destination_message_id, modified_text)
         except Exception as ex:
-            # Log the exception if unable to edit
             try:
                 ERROR[str(ex)]
             except KeyError:
@@ -77,6 +69,11 @@ async def autopost_func(e):
     # Modify "TGT" and "SL" lines to "{PRIMIUM GROUP}"
     modified_text = re.sub(r'\b(TGT|SL)\b[^\n]*', r'\1 [PRIMIUM GROUP](https://t.me/TradingCallOwn)', e.message.text, flags=re.IGNORECASE)
 
+    # Check for phone numbers in 10-digit or +91 format and delete the message if found
+    if re.search(r"(\+91[\s-]?)?\b\d{10}\b", e.message.text):
+        await e.delete()
+        return  # Skip processing this message
+
     # Check if the message contains a URL or username mention
     if re.search(r"http[s]?://|www\.|@[A-Za-z0-9_]+", e.message.text):
         y = DestiM.get()
@@ -84,7 +81,7 @@ async def autopost_func(e):
             try:
                 await e.client.send_message(
                     int(ys), 
-                    "😉 𝗛𝗲𝘆 𝗧𝗿𝗲𝗱𝗲𝗿𝘀 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗮𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲\n\n📈 𝗜𝗻 𝗩𝗜𝗣 𝗴𝗿𝗼𝘂𝗽 𝗲𝘃𝗲𝗿𝘆 𝘁𝗿𝗮𝗱𝗲 𝗙𝘂𝗹𝗹 𝗮𝗱𝘃𝗮𝗻𝗰𝗲 𝗹𝗲𝘃𝗲𝗹\n\n🎇 𝗜𝗻 𝘃𝗶𝗽 𝗴𝗿𝗼𝘂𝗽 𝗲𝘃𝗲𝗿𝘆 𝘁𝗿𝗮𝗱𝗲 𝗧𝗚𝗧 𝗮𝗻𝗱 𝗦𝗟\n\n\n⛑️ 𝗜𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗺𝗲𝗺𝗯𝗲𝗿𝘀 𝘄𝗲 𝗮𝗿𝗲 𝗽𝗿𝗼𝘃𝗶𝗱𝗶𝗻𝗴 𝗳𝘂𝗹𝗹 𝘀𝘂𝗽𝗽𝗼𝗿𝘁\n\n\n💰 𝟲 𝗺𝗼𝗻𝘁𝗵𝘀 𝗽𝗿𝗶𝗰𝗲 - 𝗥𝘀 𝟵𝟵𝟵/-\n\n💰 𝟭 𝘆𝗲𝗮𝗿 𝗽𝗿𝗶𝗰𝗲 - 𝗥𝘀 𝟭𝟱𝟵𝟵/-\n\n⏫ 𝗬𝗼𝘂 𝗻𝗲𝗲𝗱 𝘁𝗼 𝗝𝗼𝗶𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽\n\n💸 𝗗𝗺 𝗺𝗲 - @TradingCallOwn"
+                    "😉 𝗛𝗲𝘆 𝗧𝗿𝗲𝗱𝗲𝗿𝘀 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗮𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲\n\n📈 𝗜𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗲𝘃𝗲𝗿𝘆 𝘁𝗿𝗮𝗱𝗲 𝗙𝘂𝗹𝗹 𝗮𝗱𝘃𝗮𝗻𝗰𝗲 𝗹𝗲𝘃𝗲𝗹\n\n🎇 𝗜𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗲𝘃𝗲𝗿𝘆 𝘁𝗿𝗮𝗱𝗲 𝗧𝗚𝗧 𝗮𝗻𝗱 𝗦𝗟\n\n\n⛑️ 𝗜𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗺𝗲𝗺𝗯𝗲𝗿𝘀 𝘄𝗲 𝗮𝗿𝗲 𝗽𝗿𝗼𝘃𝗶𝗱𝗶𝗻𝗴 𝗳𝘂𝗹𝗹 𝘀𝘂𝗽𝗽𝗼𝗿𝘁\n\n\n💰 𝟲 𝗺𝗼𝗻𝘁𝗵𝘀 𝗽𝗿𝗶𝗰𝗲 - 𝗥𝘀 𝟵𝟵𝟵/-\n\n💰 𝟭 𝘆𝗲𝗮𝗿 𝗽𝗿𝗶𝗰𝗲 - 𝗥𝘀 𝟭𝟱𝟵𝟵/-\n\n⏫ 𝗬𝗼𝘂 𝗻𝗲𝗲𝗱 𝘁𝗼 𝗝𝗼𝗶𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽\n\n💸 𝗗𝗺 𝗺𝗲 - @TradingCallOwn"
                 )
             except Exception as ex:
                 try:
@@ -107,26 +104,18 @@ async def autopost_func(e):
                 if original_msg.id in message_map:
                     reply_to_msg_id = message_map[original_msg.id][1]
 
-            # Check if the message contains media
             if e.message.media:
-                # Download the media file temporarily
                 media_file = await e.client.download_media(e.message.media)
-
-                # Send the media with modified caption to the destination channel
                 sent_message = await e.client.send_file(
                     int(ys), 
                     media_file, 
                     caption=modified_text, 
                     reply_to=reply_to_msg_id
                 )
-
-                # Clean up the downloaded media file after sending
                 os.remove(media_file)
             else:
-                # Send a text message if no media is present
                 sent_message = await e.client.send_message(int(ys), modified_text, reply_to=reply_to_msg_id)
 
-            # Store both the destination chat ID and message ID
             message_map[e.message.id] = (int(ys), sent_message.id)
         except Exception as ex:
             try:
@@ -143,6 +132,7 @@ if udB.get_key("AUTOPOST"):
 # Add the delete and edit handlers
 ultroid_bot.add_handler(on_source_message_delete, events.MessageDeleted)
 ultroid_bot.add_handler(on_source_message_edit, events.MessageEdited)
+
 
 @ultroid_cmd(pattern="shift (.*)")
 async def _(e):
