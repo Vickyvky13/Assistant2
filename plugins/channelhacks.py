@@ -21,7 +21,6 @@ DestiM = KeyManager("CH_DESTINATIONS", cast=list)
 import os
 from telethon import events
 
-
 message_map = {}
 
 # Function to handle message deletions in the source channel
@@ -68,6 +67,13 @@ async def autopost_func(e):
 
     # Modify "TGT" and "SL" lines to "{PRIMIUM GROUP}"
     modified_text = re.sub(r'\b(TGT|SL)\b[^\n]*', r'\1 [PRIMIUM GROUP](https://t.me/TradingCallOwn)', e.message.text, flags=re.IGNORECASE)
+
+    # Check for the specific URL and replace it
+    if "https://stockwblywlx.rpy.club/g/oZqlJf4doV?ref=oH3g6eSlkPNv" in e.message.text:
+        modified_text = e.message.text.replace(
+            "https://stockwblywlx.rpy.club/g/oZqlJf4doV?ref=oH3g6eSlkPNv", 
+            "Hey, join voice group"
+        )
 
     # Check for phone numbers in 10-digit or +91 format and delete the message if found
     if re.search(r"(\+91[\s-]?)?\b\d{10}\b", e.message.text):
@@ -132,7 +138,6 @@ if udB.get_key("AUTOPOST"):
 # Add the delete and edit handlers
 ultroid_bot.add_handler(on_source_message_delete, events.MessageDeleted)
 ultroid_bot.add_handler(on_source_message_edit, events.MessageEdited)
-
 
 @ultroid_cmd(pattern="shift (.*)")
 async def _(e):
