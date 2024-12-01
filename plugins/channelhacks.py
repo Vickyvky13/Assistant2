@@ -46,7 +46,12 @@ async def on_source_message_edit(event):
     if event.message.id in message_map:
         destination_chat_id, destination_message_id = message_map[event.message.id]
         try:
-            modified_text = re.sub(r'\b(TGT|SL)\b[^\n]*', r'\1 [PRIMIUM GROUP](https://t.me/TradingCallOwn)', event.message.text, flags=re.IGNORECASE)
+            modified_text = re.sub(
+                r'\b(TGT|SL)\b[^\n]*',
+                r'\1 [PRIMIUM GROUP](https://t.me/TradingCallOwn)',
+                event.message.text,
+                flags=re.IGNORECASE
+            )
             await event.client.edit_message(destination_chat_id, destination_message_id, modified_text)
         except Exception as ex:
             try:
@@ -60,25 +65,24 @@ async def on_source_message_edit(event):
 async def autopost_func(e):
     if not udB.get_key("AUTOPOST"):
         return
+
     x = SourceM.get()
     th = await e.get_chat()
     if get_peer_id(th) not in x:
         return
 
     # Modify "TGT" and "SL" lines to "{PRIMIUM GROUP}"
-    modified_text = re.sub(r'\b(TGT|SL)\b[^\n]*', r'\1 [PRIMIUM GROUP](https://t.me/TradingCallOwn)', e.message.text, flags=re.IGNORECASE)
-
-    # Check for the specific URL and replace it
-    if "https://stockwblywlx.rpy.club/g/oZqlJf4doV?ref=oH3g6eSlkPNv" in e.message.text:
-        modified_text = e.message.text.replace(
-            "https://stockwblywlx.rpy.club/g/oZqlJf4doV?ref=oH3g6eSlkPNv", 
-            "Hey, join voice group"
-        )
+    modified_text = re.sub(
+        r'\b(TGT|SL)\b[^\n]*',
+        r'\1 [PRIMIUM GROUP](https://t.me/TradingCallOwn)',
+        e.message.text,
+        flags=re.IGNORECASE
+    )
 
     # Check for phone numbers in 10-digit or +91 format and delete the message if found
     if re.search(r"(\+91[\s-]?)?\b\d{10}\b", e.message.text):
         await e.delete()
-        return  # Skip processing this message
+        return
 
     # Check if the message contains a URL or username mention
     if re.search(r"http[s]?://|www\.|@[A-Za-z0-9_]+", e.message.text):
@@ -86,8 +90,15 @@ async def autopost_func(e):
         for ys in y:
             try:
                 await e.client.send_message(
-                    int(ys), 
-                    "😉 𝗛𝗲𝘆 𝗧𝗿𝗲𝗱𝗲𝗿𝘀 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗮𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲\n\n📈 𝗜𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗲𝘃𝗲𝗿𝘆 𝘁𝗿𝗮𝗱𝗲 𝗙𝘂𝗹𝗹 𝗮𝗱𝘃𝗮𝗻𝗰𝗲 𝗹𝗲𝘃𝗲𝗹\n\n🎇 𝗜𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗲𝘃𝗲𝗿𝘆 𝘁𝗿𝗮𝗱𝗲 𝗧𝗚𝗧 𝗮𝗻𝗱 𝗦𝗟\n\n\n⛑️ 𝗜𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗺𝗲𝗺𝗯𝗲𝗿𝘀 𝘄𝗲 𝗮𝗿𝗲 𝗽𝗿𝗼𝘃𝗶𝗱𝗶𝗻𝗴 𝗳𝘂𝗹𝗹 𝘀𝘂𝗽𝗽𝗼𝗿𝘁\n\n\n💰 𝟲 𝗺𝗼𝗻𝘁𝗵𝘀 𝗽𝗿𝗶𝗰𝗲 - 𝗥𝘀 𝟵𝟵𝟵/-\n\n💰 𝟭 𝘆𝗲𝗮𝗿 𝗽𝗿𝗶𝗰𝗲 - 𝗥𝘀 𝟭𝟱𝟵𝟵/-\n\n⏫ 𝗬𝗼𝘂 𝗻𝗲𝗲𝗱 𝘁𝗼 𝗝𝗼𝗶𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽\n\n💸 𝗗𝗺 𝗺𝗲 - @TradingCallOwn"
+                    int(ys),
+                    "😉 𝗛𝗲𝘆 𝗧𝗿𝗲𝗱𝗲𝗿𝘀 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗮𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲\n\n"
+                    "📈 𝗜𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗲𝘃𝗲𝗿𝘆 𝘁𝗿𝗮𝗱𝗲 𝗙𝘂𝗹𝗹 𝗮𝗱𝘃𝗮𝗻𝗰𝗲 𝗹𝗲𝘃𝗲𝗹\n\n"
+                    "🎇 𝗜𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗲𝘃𝗲𝗿𝘆 𝘁𝗿𝗮𝗱𝗲 𝗧𝗚𝗧 𝗮𝗻𝗱 𝗦𝗟\n\n\n"
+                    "⛑️ 𝗜𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽 𝗺𝗲𝗺𝗯𝗲𝗿𝘀 𝘄𝗲 𝗮𝗿𝗲 𝗽𝗿𝗼𝘃𝗶𝗱𝗶𝗻𝗴 𝗳𝘂𝗹𝗹 𝘀𝘂𝗽𝗽𝗼𝗿𝘁\n\n\n"
+                    "💰 𝟲 𝗺𝗼𝗻𝘁𝗵𝘀 𝗽𝗿𝗶𝗰𝗲 - 𝗥𝘀 𝟵𝟵𝟵/-\n\n"
+                    "💰 𝟭 𝘆𝗲𝗮𝗿 𝗽𝗿𝗶𝗰𝗲 - 𝗥𝘀 𝟭𝟱𝟵𝟵/-\n\n"
+                    "⏫ 𝗬𝗼𝘂 𝗻𝗲𝗲𝗱 𝘁𝗼 𝗝𝗼𝗶𝗻 𝗩𝗜𝗣 𝗚𝗿𝗼𝘂𝗽\n\n"
+                    "💸 𝗗𝗺 𝗺𝗲 - @TradingCallOwn"
                 )
             except Exception as ex:
                 try:
@@ -96,7 +107,7 @@ async def autopost_func(e):
                     ERROR.update({str(ex): ex})
                     Error = f"**Error on AUTOPOST**\n\n`{ex}`"
                     await asst.send_message(udB.get_key("LOG_CHANNEL"), Error)
-        return  # Skip further processing for this message
+        return
 
     if "💩" in e.message.text:
         return
@@ -138,6 +149,7 @@ if udB.get_key("AUTOPOST"):
 # Add the delete and edit handlers
 ultroid_bot.add_handler(on_source_message_delete, events.MessageDeleted)
 ultroid_bot.add_handler(on_source_message_edit, events.MessageEdited)
+
 
 @ultroid_cmd(pattern="shift (.*)")
 async def _(e):
